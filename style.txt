@@ -1,0 +1,81 @@
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Upload } from "lucide-react";
+import { motion } from "framer-motion";
+
+const categories = ["Shirts", "Hoodies", "Pants", "Shoes"];
+
+export default function RandomizeStyle() {
+  const [images, setImages] = useState({
+    Shirts: [],
+    Hoodies: [],
+    Pants: [],
+    Shoes: []
+  });
+  const [outfit, setOutfit] = useState({});
+
+  const handleUpload = (e, category) => {
+    const files = Array.from(e.target.files);
+    const urls = files.map(file => URL.createObjectURL(file));
+    setImages(prev => ({ ...prev, [category]: [...prev[category], ...urls] }));
+  };
+
+  const randomizeOutfit = () => {
+    const newOutfit = {};
+    categories.forEach(category => {
+      const items = images[category];
+      if (items.length > 0) {
+        const randomIndex = Math.floor(Math.random() * items.length);
+        newOutfit[category] = items[randomIndex];
+      }
+    });
+    setOutfit(newOutfit);
+  };
+
+  return (
+    <div className="p-4 space-y-6">
+      <h1 className="text-2xl font-bold text-center">Randomize Style</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {categories.map(category => (
+          <Card key={category}>
+            <CardContent className="p-4 space-y-2">
+              <h2 className="text-xl font-semibold">{category}</h2>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={e => handleUpload(e, category)}
+              />
+              <div className="flex flex-wrap gap-2">
+                {images[category].map((img, idx) => (
+                  <img key={idx} src={img} alt="uploaded" className="w-20 h-20 object-cover rounded" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <div className="text-center">
+        <Button onClick={randomizeOutfit}>Randomize Outfit</Button>
+      </div>
+
+      {Object.keys(outfit).length > 0 && (
+        <motion.div className="grid grid-cols-2 md:grid-cols-4 gap-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {categories.map(cat => (
+            outfit[cat] ? (
+              <Card key={cat}>
+                <CardContent className="p-2">
+                  <h3 className="text-lg font-medium text-center">{cat}</h3>
+                  <img src={outfit[cat]} alt={cat} className="w-full h-40 object-cover rounded" />
+                </CardContent>
+              </Card>
+            ) : null
+          ))}
+        </motion.div>
+      )}
+    </div>
+  );
+}
